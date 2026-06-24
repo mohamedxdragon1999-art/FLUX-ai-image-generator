@@ -1,49 +1,33 @@
-import random
+<html>
+<body>
+    <h1>FLUX.2 Max Image Generation</h1>
+    <div id="status"></div>
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        // Start timer
+        const status = document.getElementById('status');
+        const startTime = Date.now();
+        const timerInterval = setInterval(() => {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            status.textContent = `Loading (${elapsed} seconds)`;
+        }, 100);
 
-def process_word_list(text_data, chunk_size=40):
-    """
-    Takes a string of words, extracts them, randomizes the order, 
-    and splits them into sublists of a specified size.
-    """
-    # 1. Extract words: split by newline and remove any empty strings or extra spaces
-    words = [word.strip() for word in text_data.split('\n') if word.strip()]
-    
-    # 2. Shuffle and randomize the list of words
-    random.shuffle(words)
-    
-    # 3. Create sublists of the specified chunk_size (40 words per list)
-    chunked_lists = [words[i:i + chunk_size] for i in range(0, len(words), chunk_size)]
-    
-    return chunked_lists
+        puter.ai.txt2img(
+            "Ultra-detailed photograph of a modern luxury penthouse at golden hour, floor-to-ceiling windows overlooking a city skyline, realistic materials and reflections",
+            { model: "black-forest-labs/flux.2-max" }
+        )
+        .then(imageElement => {
+            document.body.appendChild(imageElement);
 
-# --- How to use the code ---
-
-# OPTION A: If your words are saved in a text file (e.g., 'words.txt')
-# Uncomment the three lines below to read directly from a file:
- with open('words.txt', 'r', encoding='utf-8') as file:
-     text_data = file.read()
- lists_of_40 = process_word_list(text_data)
-
-# OPTION B: Using a string variable (Example using a small snippet of your data)
-text_data = """a
-aa
-aaa
-aah
-aahed
-aahing
-aahs
-aal
-aalii
-aaliis
-"""
-
-# Process the words into randomized lists of 40
-# (Using the function we defined above)
-lists_of_40 = process_word_list(text_data, chunk_size=40)
-
-# Print the results to verify
-print(f"Total separate lists created: {len(lists_of_40)}")
-
-for index, word_list in enumerate(lists_of_40):
-    print(f"\n--- List {index + 1} (Contains {len(word_list)} words) ---")
-    print(word_list)
+            // Clear timer and show finished status
+            clearInterval(timerInterval);
+            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+            status.textContent = `Finished (${totalTime} seconds)`;
+        }).catch(error => {
+            console.error(error);
+            clearInterval(timerInterval);
+            status.textContent = JSON.stringify(error);
+        })
+    </script>
+</body>
+</html>
