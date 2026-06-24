@@ -1,33 +1,84 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .controls { margin-bottom: 20px; }
+        input[type="text"] { width: 60%; padding: 10px; font-size: 16px; border-radius: 4px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #status { margin: 15px 0; font-weight: bold; color: #555; }
+        #image-container img { max-width: 100%; height: auto; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    </style>
+</head>
 <body>
+
     <h1>FLUX.2 Max Image Generation</h1>
-    <div id="status"></div>
+    
+    <!-- UI Elements for User Input -->
+    <div class="controls">
+        <input type="text" id="prompt-input" placeholder="Type your image description here..." value="Ultra-detailed photograph of a modern luxury penthouse at golden hour">
+        <button id="generate-btn">Generate</button>
+    </div>
+
+    <div id="status">Ready to generate...</div>
+    <div id="image-container"></div>
+
     <script src="https://js.puter.com/v2/"></script>
     <script>
-        // Start timer
         const status = document.getElementById('status');
-        const startTime = Date.now();
-        const timerInterval = setInterval(() => {
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            status.textContent = `Loading (${elapsed} seconds)`;
-        }, 100);
+        const imageContainer = document.getElementById('image-container');
+        const promptInput = document.getElementById('prompt-input');
+        const generateBtn = document.getElementById('generate-btn');
 
-        puter.ai.txt2img(
-            "Ultra-detailed photograph of a modern luxury penthouse at golden hour, floor-to-ceiling windows overlooking a city skyline, realistic materials and reflections",
-            { model: "black-forest-labs/flux.2-max" }
-        )
-        .then(imageElement => {
-            document.body.appendChild(imageElement);
+        // Function that handles the generation process
+        function generateImage() {
+            const userPrompt = promptInput.value.trim();
+            
+            if (!userPrompt) {
+                status.textContent = "Please enter a prompt first!";
+                return;
+            }
 
-            // Clear timer and show finished status
-            clearInterval(timerInterval);
-            const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-            status.textContent = `Finished (${totalTime} seconds)`;
-        }).catch(error => {
-            console.error(error);
-            clearInterval(timerInterval);
-            status.textContent = JSON.stringify(error);
-        })
+            // Clear previous image
+            imageContainer.innerHTML = '';
+            
+            // Start timer
+            const startTime = Date.now();
+            status.textContent = `Loading (0.0 seconds)`;
+            
+            const timerInterval = setInterval(() => {
+                const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                status.textContent = `Loading (${elapsed} seconds)`;
+            }, 100);
+
+            // Call Puter API with the dynamic user prompt
+            puter.ai.txt2img(
+                userPrompt,
+                { model: "black-forest-labs/flux.2-max" }
+            )
+            .then(imageElement => {
+                imageContainer.appendChild(imageElement);
+
+                // Clear timer and show finished status
+                clearInterval(timerInterval);
+                const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+                status.textContent = `Finished (${totalTime} seconds)`;
+            })
+            .catch(error => {
+                console.error(error);
+                clearInterval(timerInterval);
+                status.textContent = "Error: " + JSON.stringify(error);
+            });
+        }
+
+        // Run the function when user clicks the button
+        generateBtn.addEventListener('click', generateImage);
+
+        // Also allow pressing "Enter" key inside the input box to generate
+        promptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateImage();
+        });
     </script>
 </body>
 </html>
